@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Register Tutor</title>
+</head>
+
+<body>
+    <h2>Register Tutor</h2>
+
+    <form id="tutorForm">
+        <label>Name:</label>
+        <input type="text" id="name" required><br><br>
+
+        <label>Password:</label>
+        <input type="password" id="password" required><br><br>
+
+        <label>Gender:</label>
+        <select id="gender" required>
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select><br><br>
+
+        <label>Education:</label>
+        <input type="text" id="education" required><br><br>
+
+        <!-- <label>Preferred Subject:</label>
+        <input type="text" id="preferredSubject" required><br><br>
+
+        <label>Preferred Time:</label>
+        <input type="text" id="preferredTime" required><br><br> -->
+
+        <label>Location:</label>
+        <input type="text" id="location" required><br><br>
+
+        <label>Pincode:</label>
+        <input type="number" id="pincode" required><br><br>
+
+        <h3>Contact Details</h3>
+
+        <label>Address:</label>
+        <input type="text" id="address" required><br><br>
+
+        <label>Phone Number:</label>
+        <input type="tel" id="phoneNumber" required><br><br>
+
+        <label>Email:</label>
+        <input type="email" id="email" required><br><br>
+
+        <label>Profile Image:</label>
+        <input type="file" id="imageFile" accept="image/*" required><br><br>
+
+        <button type="submit">Register</button>
+    </form>
+    <h2>Post Tutoring Info</h2>
+
+    <form id="tutoringForm">
+        <label for="subject">Subjects (comma-separated):</label><br>
+        <input type="text" id="subject" name="subject" placeholder="e.g., Math, Science"><br><br>
+
+        <label for="preferredTime">Preferred Time:</label><br>
+        <input type="text" id="preferredTime" name="preferredTime" placeholder="e.g., 5 PM - 7 PM"><br><br>
+
+        <label for="postedDate">Posted Date:</label><br>
+        <input type="date" id="postedDate" name="postedDate"><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+    <p id="response"></p>
+
+    <script>
+        const form = document.getElementById("tutorForm");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const datetoday = new Date();
+            const tutor = {
+                name: document.getElementById("name").value,
+                password: document.getElementById("password").value,
+                gender: document.getElementById("gender").value,
+                education: document.getElementById("education").value,
+                // preferredSubject: document.getElementById("preferredSubject").value,
+                // preferredTime: document.getElementById("preferredTime").value,
+                location: document.getElementById("location").value,
+                pincode: parseInt(document.getElementById("pincode").value),
+
+                contactDetails: {
+                    address: document.getElementById("address").value,
+                    phoneNumber: document.getElementById("phoneNumber").value,
+                    email: document.getElementById("email").value
+                }
+            };
+
+            const imageFile = document.getElementById("imageFile").files[0];
+
+            const formData = new FormData();
+            formData.append("tutor", new Blob([JSON.stringify(tutor)], { type: "application/json" }));
+            formData.append("imageFile", imageFile);
+
+            try {
+                const res = await fetch("http://localhost:8080/tutor/register", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+                document.getElementById("response").innerText = "✅ Registered Tutor:\n" + JSON.stringify(data, null, 2);
+            } catch (err) {
+                console.error("Error:", err);
+                document.getElementById("response").innerText = "❌ Registration failed!";
+            }
+        });
+
+        document.getElementById('tutoringForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const subjectsInput = document.getElementById('subject').value;
+            console.log(subjectsInput);
+            const preferredTime = document.getElementById('preferredTime').value;
+            const postedDate = new Date();
+
+            const subjectList = subjectsInput.split(',').map(s => s.trim());
+            console.log(subjectList);
+            const tutoringData = {
+                subject: subjectList,
+                preferredTime: preferredTime,
+                postedDate: postedDate,
+                tutorId: 19
+            };
+
+            try {
+                const response = await fetch("http://localhost:8080/tutor/tutoring", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(tutoringData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to post tutoring data');
+                }
+
+                const result = await response.json();
+                alert("Tutoring info added successfully!");
+                console.log(result);
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>
